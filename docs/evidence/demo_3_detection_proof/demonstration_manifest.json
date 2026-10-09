@@ -1,10 +1,11 @@
 {
   "demonstration_id": "DEMO-03-SAFEMIGRATE-DETECTION",
-  "requirement": "R4 / Document 08 §Demo 3",
+  "requirement": "R4 / Document 08 \u00a7Demo 3",
   "timestamp": "2026-10-09T15:28:53Z",
   "analyzer": {
     "name": "safemigrate",
-    "version": "0.1.0"
+    "version": "0.1.0",
+    "git_commit": "7624e1e"
   },
   "environment": {
     "python_version": "3.14.7",
@@ -15,7 +16,9 @@
   "results": {
     "observed_exit_code": 1,
     "expected_exit_code": 1,
-    "detected_rules": ["SM002"],
+    "detected_rules": [
+      "SM002"
+    ],
     "finding_severity": "high",
     "finding_confidence": "high",
     "affected_table": "products",
