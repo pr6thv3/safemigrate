@@ -1,11 +1,14 @@
-# Issue: Configurable Policy Enforcement and Exit Codes
+# Issue: Standardized Policy Enforcement and Exit Codes
 
 ## Description
-Implement policy evaluation against rule severities and map findings to deterministic CI exit codes.
+Implement policy evaluation against rule severities and map findings to standardized CI exit codes.
 
 ## Acceptance Criteria
-- [ ] Threshold flag `--fail-on [critical|high|medium|low]` controls process termination.
-- [ ] Exit code `0` when all findings are below the configured threshold.
-- [ ] Exit code `1` when any finding meets or exceeds the threshold.
-- [ ] Exit code `2` for syntax parse errors or unanalyzable inputs.
-- [ ] Exit code `3` for unexpected runtime exceptions.
+- [ ] Standardized exit codes:
+  - `0`: Scan completed; no finding crossed the configured threshold.
+  - `1`: Scan completed; policy threshold crossed (e.g., `--fail-on high`).
+  - `2`: Invalid arguments, configuration, input, or unanalyzable syntax/parse failure.
+  - `3`: Unexpected internal runtime exception.
+- [ ] Precedence rule: When parse errors and policy findings coexist, exit with code 2 (fail closed).
+- [ ] Severity ordering strictly enforced: `critical > high > medium > low > info`.
+- [ ] Tests assert all exit codes across CLI edge cases.
