@@ -1,0 +1,36 @@
+{
+  "demonstration_id": "DEMO-03-SAFEMIGRATE-DETECTION",
+  "requirement": "R4 / Document 08 §Demo 3",
+  "timestamp": "2026-10-09T15:28:53Z",
+  "analyzer": {
+    "name": "safemigrate",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "python_version": "3.14.7",
+    "os": "Linux x86_64",
+    "parser": "SQLGlot PostgreSQL dialect"
+  },
+  "command": "safemigrate scan docs/evidence/demo_3_detection_proof/fixtures/drop_description.sql --fail-on high --format json -o demo_3_output.json",
+  "results": {
+    "observed_exit_code": 1,
+    "expected_exit_code": 1,
+    "detected_rules": ["SM002"],
+    "finding_severity": "high",
+    "finding_confidence": "high",
+    "affected_table": "products",
+    "affected_column": "description",
+    "passed": false,
+    "proof_verified": true
+  },
+  "artifacts": [
+    "fixtures/drop_description.sql",
+    "demo_3_output.json",
+    "demo_3_output.sarif",
+    "demo_3_console.log",
+    "DEMO_3_SUMMARY.md",
+    "report.json",
+    "report.sarif",
+    "terminal_output.txt"
+  ]
+}
