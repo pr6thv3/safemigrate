@@ -51,9 +51,8 @@ class SM007FKCheckValidation(Rule):
                     fk = action.find(exp.ForeignKey)
                     check = action.find(exp.CheckColumnConstraint) or action.find(exp.Check)
                     if fk or check:
-                        # Check if NOT VALID is present in action tokens or raw statement text
-                        sql_text = statement.raw_statement.upper()
-                        is_not_valid = "NOT VALID" in sql_text or bool(action.args.get("not_valid"))
+                        # Check if NOT VALID is present on parent Alter AST node or action args
+                        is_not_valid = bool(node.args.get("not_valid")) or bool(getattr(action, "args", {}).get("not_valid"))
 
                         if not is_not_valid:
                             # Extract constraint name

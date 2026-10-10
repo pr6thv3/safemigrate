@@ -1,0 +1,57 @@
+name: SafeMigrate CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    name: Test & Build Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip build
+          pip install .[dev]
+
+      - name: Run pytest test suite
+        run: |
+          pytest tests/ -v --junitxml=junit.xml
+
+      - name: Build wheel and source distribution
+        run: |
+          python -m build
+
+      - name: Verify CLI installation and commands
+        run: |
+          pip install dist/*.whl --force-reinstall
+          safemigrate --version
+          safemigrate rules list
+          safemigrate rules show SM001
+          safemigrate rules show SM002
+          safemigrate scan tests/fixtures/clean/ --format json
+
+      - name: Upload wheel artifact
+        if: matrix.python-version == '3.14'
+        uses: actions/upload-artifact@v4
+        with:
+          name: safemigrate-wheel
+          path: dist/*.whl
+          if-no-files-found: error

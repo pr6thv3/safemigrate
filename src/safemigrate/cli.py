@@ -104,24 +104,23 @@ def scan_command(
 
         report = analyzer.scan_path(path)
 
-        # Format report
-        if format == OutputFormat.JSON:
-            output_content = format_json(report)
-        elif format == OutputFormat.SARIF:
-            output_content = format_sarif(report)
-        else:
-            # human or text
-            output_content = format_report(report, format)
-
-        # Write or print
+        # Format and output report
         if output:
+            if format == OutputFormat.JSON:
+                output_content = format_json(report)
+            elif format == OutputFormat.SARIF:
+                output_content = format_sarif(report)
+            else:
+                output_content = format_report(report, format)
             output.parent.mkdir(parents=True, exist_ok=True)
             output.write_text(output_content, encoding="utf-8")
-            if format == OutputFormat.HUMAN:
-                render_terminal_report(report)
         else:
-            if format in (OutputFormat.JSON, OutputFormat.SARIF, OutputFormat.TEXT):
-                sys.stdout.write(output_content + "\n")
+            if format == OutputFormat.JSON:
+                sys.stdout.write(format_json(report) + "\n")
+            elif format == OutputFormat.SARIF:
+                sys.stdout.write(format_sarif(report) + "\n")
+            elif format == OutputFormat.TEXT:
+                sys.stdout.write(format_report(report, OutputFormat.TEXT) + "\n")
             else:
                 render_terminal_report(report)
 

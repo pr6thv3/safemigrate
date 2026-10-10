@@ -39,7 +39,7 @@
     "fail_on": "high",
     "passed": false
   },
-  "scan_timestamp": "2026-10-09T15:28:53.890364+00:00",
+  "scan_timestamp": "2026-10-09T19:50:48.003194+00:00",
   "scanned_files": [
     "docs/evidence/demo_3_detection_proof/fixtures/drop_description.sql"
   ],

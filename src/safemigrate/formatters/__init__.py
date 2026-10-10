@@ -1,5 +1,6 @@
 """Report formatters for SafeMigrate."""
 
+import io
 import sys
 from rich.console import Console
 from rich.panel import Panel
@@ -108,6 +109,7 @@ def format_report(report: ScanReport, fmt: OutputFormat) -> str:
         return format_sarif(report)
     else:
         # text / human format
-        string_io_console = Console(record=True, width=100)
+        string_io = io.StringIO()
+        string_io_console = Console(file=string_io, record=True, width=100)
         render_terminal_report(report, string_io_console)
         return string_io_console.export_text()

@@ -33,6 +33,31 @@ def _detect_dynamic_sql(raw_sql: str) -> Optional[str]:
     return None
 
 
+def _is_validate_constraint_command(stmt_tokens: List[Token]) -> bool:
+    """
+    Check if statement tokens represent a recognized benign DDL command.
+    Currently recognizes: ALTER TABLE [ONLY] [schema.]<table> VALIDATE CONSTRAINT <constraint>.
+    Immune to comment injection because tokens are pre-stripped of comments.
+    """
+    words = [t.text.upper() for t in stmt_tokens if t.token_type != TokenType.SEMICOLON]
+    if len(words) < 5 or words[0] != "ALTER" or words[1] != "TABLE":
+        return False
+    try:
+        val_idx = words.index("VALIDATE")
+        if val_idx + 2 >= len(words) or words[val_idx + 1] != "CONSTRAINT":
+            return False
+        # Constraint name is words[val_idx + 2]; ensure no trailing actions/commas
+        if len(words) != val_idx + 3:
+            return False
+        middle = words[2:val_idx]
+        disallowed = {"DROP", "ADD", "ALTER", "RENAME", "SET", "CREATE"}
+        if any(w in disallowed for w in middle):
+            return False
+        return True
+    except ValueError:
+        return False
+
+
 def parse_sql_content(
     sql_content: str, file_path: str = "<stdin>"
 ) -> Tuple[List[ParsedStatement], List[Diagnostic]]:
@@ -115,18 +140,27 @@ def parse_sql_content(
             for ast_node in valid_stmts:
                 # Check if AST represents an unsupported command that fell back
                 if isinstance(ast_node, exp.Command):
-                    cmd_name = str(ast_node.this).upper()
-                    if cmd_name == "EXECUTE" or "EXECUTE" in ast_node.sql("postgres").upper():
-                        diagnostics.append(
-                            Diagnostic(
-                                type=DiagnosticType.UNSUPPORTED_SYNTAX,
+                    if _is_validate_constraint_command(stmt_tokens):
+                        statements.append(
+                            ParsedStatement(
+                                ast=ast_node,
                                 file=file_path,
                                 line=stmt_start_line,
                                 column=stmt_start_col,
-                                message=f"Dynamic SQL or unsupported procedural command: {raw_stmt}",
+                                raw_statement=raw_stmt,
                             )
                         )
                         continue
+                    diagnostics.append(
+                        Diagnostic(
+                            type=DiagnosticType.UNSUPPORTED_SYNTAX,
+                            file=file_path,
+                            line=stmt_start_line,
+                            column=stmt_start_col,
+                            message=f"Unsupported syntax, compound DDL, or unanalyzable command: {raw_stmt}",
+                        )
+                    )
+                    continue
 
                 statements.append(
                     ParsedStatement(

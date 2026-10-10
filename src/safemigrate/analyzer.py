@@ -146,12 +146,23 @@ def _extract_schema_elements_from_statement(
                 # Check if staged NOT NULL check constraint
                 check = action.find(exp.CheckColumnConstraint) or action.find(exp.Check)
                 if check:
+                    # 1. AST extraction: inspect exp.Is nodes inside check constraint
+                    for is_exp in check.find_all(exp.Is):
+                        if isinstance(is_exp.expression, exp.Null) and is_exp.args.get("negate"):
+                            col = is_exp.this
+                            col_id = col.name if hasattr(col, "name") and col.name else str(col).strip('"')
+                            if col_id:
+                                tbl_state.staged_not_null_checks.add(col_id.lower().strip('"'))
+
+                    # 2. Regex fallback supporting quoted, unquoted, and table-qualified column identifiers
                     sql_text = stmt.raw_statement.upper()
                     if "NOT NULL" in sql_text:
-                        # Extract column checked for IS NOT NULL
-                        match = re.search(r"\(\s*([a-zA-Z0-9_]+)\s+IS\s+NOT\s+NULL\s*\)", sql_text)
+                        match = re.search(
+                            r"\(\s*(?:[\"'\w]+\.)?[\"']?([a-zA-Z0-9_]+)[\"']?\s+IS\s+NOT\s+NULL\s*\)",
+                            sql_text,
+                        )
                         if match:
-                            tbl_state.staged_not_null_checks.add(match.group(1).lower())
+                            tbl_state.staged_not_null_checks.add(match.group(1).lower().strip('"'))
 
                 # Foreign Key
                 fk = action.find(exp.ForeignKey)
@@ -241,10 +252,69 @@ class MigrationAnalyzer:
         sql_files: List[Path] = []
         is_directory_scan = target_path.is_dir()
         if target_path.is_file():
-            if target_path.suffix == ".sql":
-                sql_files = [target_path]
-        else:
+            if target_path.suffix.lower() != ".sql":
+                return ScanReport(
+                    scan_timestamp=None if self.deterministic else datetime.now(timezone.utc).isoformat(),
+                    target_engine="postgresql",
+                    pg_version=self.pg_version,
+                    migration_transaction_mode=self.migration_transaction_mode,
+                    scanned_files=[],
+                    diagnostics=[
+                        Diagnostic(
+                            type=DiagnosticType.PARSE_ERROR,
+                            file=str(target_path),
+                            line=1,
+                            column=1,
+                            message=f"Target file is not a SQL file: {target_path}",
+                        )
+                    ],
+                    findings=[],
+                    summary=ScanSummary(
+                        total_files=0,
+                        total_statements=0,
+                        total_findings=0,
+                        severities={s.value: 0 for s in Severity},
+                        parse_errors=1,
+                    ),
+                    policy=PolicyDecision(
+                        fail_on=self.fail_on,
+                        passed=False,
+                        exit_code=2,
+                    ),
+                )
+            sql_files = [target_path]
+        elif target_path.is_dir():
             sql_files = sorted(list(target_path.rglob("*.sql")), key=lambda p: str(p))
+        else:
+            return ScanReport(
+                scan_timestamp=None if self.deterministic else datetime.now(timezone.utc).isoformat(),
+                target_engine="postgresql",
+                pg_version=self.pg_version,
+                migration_transaction_mode=self.migration_transaction_mode,
+                scanned_files=[],
+                diagnostics=[
+                    Diagnostic(
+                        type=DiagnosticType.PARSE_ERROR,
+                        file=str(target_path),
+                        line=1,
+                        column=1,
+                        message=f"Target path is neither a regular file nor a directory: {target_path}",
+                    )
+                ],
+                findings=[],
+                summary=ScanSummary(
+                    total_files=0,
+                    total_statements=0,
+                    total_findings=0,
+                    severities={s.value: 0 for s in Severity},
+                    parse_errors=1,
+                ),
+                policy=PolicyDecision(
+                    fail_on=self.fail_on,
+                    passed=False,
+                    exit_code=2,
+                ),
+            )
 
         # Handle empty directory cleanly (Exit 0)
         if not sql_files:

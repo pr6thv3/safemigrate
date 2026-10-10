@@ -1,67 +1,37 @@
-╭──────────────────────────────────────── SafeMigrate Scan ────────────────────────────────────────╮
-│ SafeMigrate v0.1.0 — PostgreSQL Migration Risk Analyzer                                          │
-│ Target Engine: postgresql (v18) | Runner Mode: unknown                                           │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-                                      Scan Summary                                       
-┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━┳━━━━━━━━━━━━━━┓
-┃ Files Scanned ┃ Statements ┃ Findings ┃ Critical ┃ High ┃ Medium ┃ Low ┃ Parse Errors ┃
-┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━╇━━━━━━━━━━━━━━┩
-│       1       │     1      │    1     │    0     │  1   │   0    │  0  │      0       │
-└───────────────┴────────────┴──────────┴──────────┴──────┴────────┴─────┴──────────────┘
+╭────────────────────────────── SafeMigrate Scan ──────────────────────────────╮
+│ SafeMigrate v0.1.0 — PostgreSQL Migration Risk Analyzer                      │
+│ Target Engine: postgresql (v18) | Runner Mode: unknown                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+                                  Scan Summary                                  
+┏━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━┳━━━━━━━━━━━┓
+┃   Files   ┃          ┃          ┃          ┃      ┃        ┃     ┃   Parse   ┃
+┃  Scanned  ┃ Stateme… ┃ Findings ┃ Critical ┃ High ┃ Medium ┃ Low ┃  Errors   ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━╇━━━━━━━━━━━┩
+│     1     │    1     │    1     │    0     │  1   │   0    │  0  │     0     │
+└───────────┴──────────┴──────────┴──────────┴──────┴────────┴─────┴───────────┘
 
 Migration Findings:
-┏━━━━━━━┳━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Rule  ┃ Sev  ┃ Conf ┃ Location                            ┃ Statement                            ┃
-┡━━━━━━━╇━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ SM002 │ high │ high │ docs/evidence/demo_3_detection_pro… │ ALTER TABLE products DROP COLUMN     │
-│       │      │      │                                     │ description;                         │
-└───────┴──────┴──────┴─────────────────────────────────────┴──────────────────────────────────────┘
-╭─────────────────────────────────────── Finding #1 (SM002) ───────────────────────────────────────╮
-│ Rule: SM002 — Destructive Column Drop                                                            │
-│ Location: docs/evidence/demo_3_detection_proof/fixtures/drop_description.sql:3:5                 │
-│ Statement: ALTER TABLE products DROP COLUMN description;                                         │
-│ Evidence: ALTER TABLE products DROP COLUMN description                                           │
-│ Explanation: Dropping column 'description' from table 'products' immediately destroys column     │
-│ data and breaks backward compatibility for active application code in rolling deployments that   │
-│ continues to read or write this column.                                                          │
-│ Recommendation: Adopt expand-contract migration pattern: (1) Deprecate and remove column         │
-│ references from application code; (2) Deploy application release N; (3) Drop column in           │
-│ subsequent release N+1 after verifying no active queries access it.                              │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ FAILED (POLICY): Findings breached policy threshold (high).                                      │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭──────────────────────────────────────── SafeMigrate Scan ────────────────────────────────────────╮
-│ SafeMigrate v0.1.0 — PostgreSQL Migration Risk Analyzer                                          │
-│ Target Engine: postgresql (v18) | Runner Mode: unknown                                           │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-                                      Scan Summary                                       
-┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━┳━━━━━━━━━━━━━━┓
-┃ Files Scanned ┃ Statements ┃ Findings ┃ Critical ┃ High ┃ Medium ┃ Low ┃ Parse Errors ┃
-┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━╇━━━━━━━━━━━━━━┩
-│       1       │     1      │    1     │    0     │  1   │   0    │  0  │      0       │
-└───────────────┴────────────┴──────────┴──────────┴──────┴────────┴─────┴──────────────┘
-
-Migration Findings:
-┏━━━━━━━┳━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Rule  ┃ Sev  ┃ Conf ┃ Location                            ┃ Statement                            ┃
-┡━━━━━━━╇━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ SM002 │ high │ high │ docs/evidence/demo_3_detection_pro… │ ALTER TABLE products DROP COLUMN     │
-│       │      │      │                                     │ description;                         │
-└───────┴──────┴──────┴─────────────────────────────────────┴──────────────────────────────────────┘
-╭─────────────────────────────────────── Finding #1 (SM002) ───────────────────────────────────────╮
-│ Rule: SM002 — Destructive Column Drop                                                            │
-│ Location: docs/evidence/demo_3_detection_proof/fixtures/drop_description.sql:3:5                 │
-│ Statement: ALTER TABLE products DROP COLUMN description;                                         │
-│ Evidence: ALTER TABLE products DROP COLUMN description                                           │
-│ Explanation: Dropping column 'description' from table 'products' immediately destroys column     │
-│ data and breaks backward compatibility for active application code in rolling deployments that   │
-│ continues to read or write this column.                                                          │
-│ Recommendation: Adopt expand-contract migration pattern: (1) Deprecate and remove column         │
-│ references from application code; (2) Deploy application release N; (3) Drop column in           │
-│ subsequent release N+1 after verifying no active queries access it.                              │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ FAILED (POLICY): Findings breached policy threshold (high).                                      │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-
+┏━━━━━━━┳━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Rule  ┃ Sev  ┃ Conf ┃ Location                  ┃ Statement                  ┃
+┡━━━━━━━╇━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ SM002 │ high │ high │ docs/evidence/demo_3_det… │ ALTER TABLE products DROP  │
+│       │      │      │                           │ COLUMN description;        │
+└───────┴──────┴──────┴───────────────────────────┴────────────────────────────┘
+╭───────────────────────────── Finding #1 (SM002) ─────────────────────────────╮
+│ Rule: SM002 — Destructive Column Drop                                        │
+│ Location:                                                                    │
+│ docs/evidence/demo_3_detection_proof/fixtures/drop_description.sql:3:5       │
+│ Statement: ALTER TABLE products DROP COLUMN description;                     │
+│ Evidence: ALTER TABLE products DROP COLUMN description                       │
+│ Explanation: Dropping column 'description' from table 'products' immediately │
+│ destroys column data and breaks backward compatibility for active            │
+│ application code in rolling deployments that continues to read or write this │
+│ column.                                                                      │
+│ Recommendation: Adopt expand-contract migration pattern: (1) Deprecate and   │
+│ remove column references from application code; (2) Deploy application       │
+│ release N; (3) Drop column in subsequent release N+1 after verifying no      │
+│ active queries access it.                                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ FAILED (POLICY): Findings breached policy threshold (high).                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
